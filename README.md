@@ -4,7 +4,9 @@ DealPilot is a real-world phone agent command desk for the YC Call My Agent hack
 
 The product is built around one idea: agents should not just chat. They should touch the real world, but with enough proof and approval gates that a human can trust what happened.
 
-![DealPilot UI](screenshots/dealpilot-verified.png)
+## Product Screenshot
+
+![DealPilot product dashboard](screenshots/dealpilot-verified.png)
 
 ## Demo In One Minute
 
@@ -277,4 +279,3 @@ Expected response:
 ## Judging Hook
 
 DealPilot is not a pitch-deck agent. It is a working phone agent workflow with live SMS intake, outbound calls, provider evidence, approval gates, and a visible proof trail. It demonstrates how real-world agents can act across phone, browser, email, memory, and payments without hiding the risk from the user.
-
