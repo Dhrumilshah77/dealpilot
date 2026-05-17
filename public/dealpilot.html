@@ -1,0 +1,1354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="DealPilot turns text and voice missions into guarded real-world agent workflows."
+    />
+    <title>DealPilot</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f0f0f;
+        --surface: #171717;
+        --surface-2: #202020;
+        --surface-3: #26221a;
+        --line: #2f2f2f;
+        --line-strong: #44413b;
+        --text: #f4f0e8;
+        --muted: #b8b0a2;
+        --muted-2: #8e877c;
+        --accent: #d7a85d;
+        --accent-2: #2c2316;
+        --accent-text: #15110a;
+        --success: #75c99d;
+        --success-bg: #14251c;
+        --danger: #ff8a8a;
+        --danger-bg: #321919;
+        --warn: #f1c27d;
+        --warn-bg: #2f2414;
+        --shadow: none;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body,
+      #app {
+        min-height: 100%;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: 'Avenir Next', 'SF Pro Display', 'Helvetica Neue',
+          sans-serif;
+        font-size: 14px;
+        line-height: 1.45;
+        margin: 0;
+      }
+
+      button,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        align-items: center;
+        border-radius: 7px;
+        border: 1px solid var(--line-strong);
+        cursor: pointer;
+        display: inline-flex;
+        gap: 8px;
+        justify-content: center;
+        min-height: 34px;
+        padding: 0 12px;
+        transition:
+          background-color 140ms ease,
+          border-color 140ms ease,
+          color 140ms ease;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      button:focus-visible,
+      textarea:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      .app-shell {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .topbar {
+        align-items: center;
+        background: #121212;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        min-height: 58px;
+        padding: 0 22px;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .brand h1 {
+        color: var(--text);
+        font-size: 18px;
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      .brand span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-text);
+        font-weight: 680;
+      }
+
+      .secondary {
+        background: var(--surface-2);
+        color: var(--text);
+      }
+
+      .primary:hover:not(:disabled) {
+        background: #e1b76f;
+        border-color: #e1b76f;
+      }
+
+      .secondary:hover:not(:disabled) {
+        border-color: #5b554c;
+      }
+
+      .page {
+        display: flex;
+        flex: 1;
+        justify-content: center;
+        padding: 18px 28px 34px;
+      }
+
+      .content {
+        display: grid;
+        gap: 16px;
+        max-width: 1440px;
+        width: 100%;
+      }
+
+      .strip,
+      .composer,
+      .panel,
+      .footer {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .strip {
+        display: grid;
+        grid-template-columns: 1.05fr 1.25fr 0.85fr;
+        overflow: hidden;
+      }
+
+      .cell {
+        display: grid;
+        gap: 8px;
+        min-width: 0;
+        padding: 16px;
+      }
+
+      .cell + .cell {
+        border-left: 1px solid var(--line);
+      }
+
+      .row {
+        align-items: center;
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+        min-width: 0;
+      }
+
+      .label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .value {
+        font-size: 17px;
+        font-weight: 650;
+        overflow-wrap: anywhere;
+      }
+
+      .meta {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .pill {
+        background: var(--surface-2);
+        border-radius: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+        padding: 3px 8px;
+        white-space: nowrap;
+      }
+
+      .pill.ready,
+      .pill.complete {
+        background: var(--success-bg);
+        color: var(--success);
+      }
+
+      .pill.error {
+        background: var(--danger-bg);
+        color: var(--danger);
+      }
+
+      .progress {
+        background: var(--surface-2);
+        border-radius: 999px;
+        height: 8px;
+        overflow: hidden;
+      }
+
+      .progress span {
+        background: var(--accent);
+        display: block;
+        height: 100%;
+        transition: width 180ms ease;
+      }
+
+      .composer {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: minmax(0, 1fr) 190px;
+        padding: 16px;
+      }
+
+      .composer h2,
+      .panel h2 {
+        font-size: 15px;
+        line-height: 1.3;
+        margin: 0;
+      }
+
+      textarea {
+        background: #111111;
+        border: 1px solid var(--line-strong);
+        border-radius: 7px;
+        color: var(--text);
+        min-height: 92px;
+        padding: 11px 12px;
+        resize: vertical;
+        width: 100%;
+      }
+
+      textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-2);
+        outline: 0;
+      }
+
+      .composer-copy {
+        display: grid;
+        gap: 10px;
+      }
+
+      .composer-actions {
+        align-items: stretch;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        justify-content: flex-end;
+      }
+
+      .format-note {
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        color: var(--muted);
+        font-size: 13px;
+        padding: 10px;
+      }
+
+      .grid-top {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(320px, 0.9fr) minmax(440px, 1.35fr);
+      }
+
+      .grid-main {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(440px, 1.2fr) minmax(360px, 0.8fr);
+      }
+
+      .panel {
+        min-width: 0;
+      }
+
+      .panel-head {
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        min-height: 52px;
+        padding: 0 16px;
+      }
+
+      .deal-list,
+      .timeline,
+      .artifact-grid {
+        display: grid;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .deal {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 7px;
+        color: inherit;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr auto;
+        justify-content: stretch;
+        min-height: auto;
+        padding: 12px;
+        text-align: left;
+        width: 100%;
+      }
+
+      .deal:hover,
+      .deal.selected {
+        background: var(--surface-2);
+      }
+
+      .deal.selected {
+        border-color: var(--line-strong);
+        box-shadow: inset 3px 0 0 var(--accent);
+      }
+
+      .deal strong {
+        display: block;
+        font-size: 14px;
+        line-height: 1.25;
+      }
+
+      .risk {
+        align-self: start;
+        background: var(--warn-bg);
+        border-radius: 6px;
+        color: var(--warn);
+        font-size: 12px;
+        font-weight: 650;
+        padding: 3px 7px;
+      }
+
+      .risk.high {
+        background: var(--danger-bg);
+        color: var(--danger);
+      }
+
+      .objective {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        padding: 16px;
+      }
+
+      .objective h3 {
+        font-size: 20px;
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      .stat-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 14px;
+      }
+
+      .stat,
+      .artifact {
+        background: var(--surface-2);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 11px;
+      }
+
+      .stat span {
+        color: var(--muted-2);
+        display: block;
+        font-size: 12px;
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.35;
+        margin-top: 3px;
+        overflow-wrap: anywhere;
+      }
+
+      .actions {
+        align-items: flex-end;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .step {
+        border: 1px solid transparent;
+        border-radius: 7px;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 28px 1fr;
+        padding: 11px;
+      }
+
+      .step.active {
+        background: var(--surface-3);
+        border-color: #5c4a2c;
+      }
+
+      .step.complete {
+        background: var(--success-bg);
+      }
+
+      .step-icon {
+        align-items: center;
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
+        color: var(--muted);
+        display: flex;
+        font-size: 13px;
+        height: 28px;
+        justify-content: center;
+        width: 28px;
+      }
+
+      .step.complete .step-icon {
+        background: var(--success);
+        border-color: var(--success);
+        color: #07130c;
+      }
+
+      .step strong,
+      .artifact strong {
+        display: block;
+        font-weight: 650;
+        margin-bottom: 3px;
+      }
+
+      .artifact p {
+        color: var(--muted);
+        margin: 0;
+      }
+
+      .signals,
+      .proof {
+        display: grid;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .signal {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 128px 1fr;
+      }
+
+      .proof-item {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 18px 1fr;
+      }
+
+      .check {
+        align-items: center;
+        background: var(--success-bg);
+        border-radius: 99px;
+        color: var(--success);
+        display: inline-flex;
+        font-size: 11px;
+        height: 18px;
+        justify-content: center;
+        width: 18px;
+      }
+
+      .footer {
+        align-items: center;
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: space-between;
+        padding: 12px 16px;
+      }
+
+      .footer strong {
+        color: var(--text);
+        font-weight: 650;
+      }
+
+      .error-text {
+        color: var(--danger);
+      }
+
+      @media (max-width: 1020px) {
+        .strip,
+        .grid-top,
+        .grid-main,
+        .composer {
+          grid-template-columns: 1fr;
+        }
+
+        .cell + .cell {
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topbar,
+        .page {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .objective,
+        .stat-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .actions {
+          align-items: stretch;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const API_BASE = 'http://127.0.0.1:3000/rest/dealpilot';
+
+      const state = {
+        activeStep: -1,
+        agentPhoneResult: undefined,
+        browserUseResult: undefined,
+        emailResult: undefined,
+        liveStatus: undefined,
+        liveStatusError: undefined,
+        memoryResult: undefined,
+        missionDraft: '',
+        missionInputError: undefined,
+        missionStatus: 'idle',
+        paymentResult: undefined,
+        researchBrief: undefined,
+        researchError: undefined,
+        savedMissions: [],
+        selectedId: undefined,
+        speechRecognition: undefined,
+        voiceListening: false,
+      };
+
+      const missionSteps = [
+        [
+          'Read account state',
+          'DealPilot reads the active phone route, attached agent, and provider readiness.',
+          'Live account state is attached to the mission.',
+        ],
+        [
+          'Generate operating brief',
+          'Gemini turns the mission into a concise execution plan with constraints.',
+          'The mission brief is ready for the phone agent.',
+        ],
+        [
+          'Score context layer',
+          'Moss and Supermemory readiness are checked for retrieval and recall.',
+          'Context providers are available for the mission.',
+        ],
+        [
+          'Confirm phone route',
+          'DealPilot confirms the active number is attached to the hosted AgentPhone agent.',
+          'The phone route is ready for inbound iMessage or SMS.',
+        ],
+        [
+          'Prepare approval gate',
+          'Sponge readiness is checked for deposits that require explicit approval.',
+          'The payment approval route is staged.',
+        ],
+        [
+          'Stage communication',
+          'AgentMail and AgentPhone are prepared for follow-up once the user approves the next step.',
+          'Communication channels are staged for execution.',
+        ],
+        [
+          'Render proof trail',
+          'DealPilot displays live API evidence and the exact next action.',
+          'Proof trail is rendered from live provider responses.',
+        ],
+      ];
+
+      const escapeHtml = (value) =>
+        String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+
+      const requestJson = async (path, options = {}) => {
+        const response = await fetch(`${API_BASE}${path}`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          ...options,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Request failed: ${path}`);
+        }
+
+        return response.json();
+      };
+
+      const delay = (milliseconds) =>
+        new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+
+      const getCheckedLabel = () => {
+        if (!state.liveStatus?.checkedAt) {
+          return 'Loading API';
+        }
+
+        return new Intl.DateTimeFormat(undefined, {
+          hour: 'numeric',
+          minute: '2-digit',
+        }).format(new Date(state.liveStatus.checkedAt));
+      };
+
+      const buildLiveMissions = () => {
+        const checkedLabel = getCheckedLabel();
+
+        if (!state.liveStatus) {
+          return [
+            {
+              id: 'loading-live-agentphone',
+              accountName: 'Loading AgentPhone account',
+              contactName: 'AgentPhone API',
+              contactRole: 'Checking live numbers',
+              website: 'https://agentphone.ai',
+              value: 'Waiting for live status',
+              stage: 'Loading',
+              closePlan:
+                'Read the live AgentPhone project before running a mission',
+              objection: 'Live status has not returned yet',
+              risk: 50,
+              owner: 'AgentPhone',
+              lastTouch: checkedLabel,
+            },
+          ];
+        }
+
+        if (state.liveStatus.agentPhone.numbers.length === 0) {
+          return [
+            {
+              id: 'no-agentphone-number',
+              accountName: 'AgentPhone project',
+              contactName: 'No active number returned',
+              contactRole: `${state.liveStatus.agentPhone.totalAgents} agents`,
+              website: 'https://agentphone.ai',
+              value: state.liveStatus.payments.spongeConfigured
+                ? 'Sponge guardrail configured'
+                : 'No payment route configured',
+              stage: 'No number',
+              closePlan: 'Create or attach an AgentPhone number before texting',
+              objection: 'AgentPhone API returned zero active numbers',
+              risk: 80,
+              owner: 'AgentPhone',
+              lastTouch: checkedLabel,
+            },
+          ];
+        }
+
+        return state.liveStatus.agentPhone.numbers.map((number) => {
+          const attachedAgent = state.liveStatus.agentPhone.agents.find(
+            (agent) => agent.id === number.agentId,
+          );
+
+          return {
+            id: number.id,
+            accountName: `AgentPhone ${number.type} line`,
+            contactName: number.phoneNumber,
+            contactRole: `${number.country ?? 'US'} ${number.status}`,
+            website: 'https://agentphone.ai',
+            value: state.liveStatus.payments.spongeConfigured
+              ? 'Sponge guardrail configured'
+              : 'No payment route configured',
+            stage: number.agentId ? 'Agent attached' : 'Number unattached',
+            closePlan: `Send a real ${number.type} message to ${number.phoneNumber} and have DealPilot collect the task, target, deadline, and spend cap`,
+            objection: number.agentId
+              ? `Attached to ${attachedAgent?.name ?? 'an AgentPhone agent'}`
+              : 'No AgentPhone agent is attached to this number',
+            risk: number.agentId ? 18 : 74,
+            owner: attachedAgent?.name ?? 'AgentPhone',
+            lastTouch: `API checked ${checkedLabel}`,
+          };
+        });
+      };
+
+      const getDeals = () => [...state.savedMissions, ...buildLiveMissions()];
+
+      const getSelectedDeal = () => {
+        const deals = getDeals();
+
+        return (
+          deals.find((deal) => deal.id === state.selectedId) ??
+          deals.find((deal) => deal.stage === 'Agent attached') ??
+          deals[0]
+        );
+      };
+
+      const getStatusLabel = () =>
+        ({
+          complete: 'Complete',
+          error: 'Needs attention',
+          idle: 'Ready',
+          researching: 'Researching',
+          running: 'Running',
+        })[state.missionStatus] ?? 'Ready';
+
+      const getProgress = () => {
+        if (state.missionStatus === 'idle' || state.missionStatus === 'error') {
+          return 0;
+        }
+
+        if (state.missionStatus === 'complete') {
+          return 100;
+        }
+
+        return Math.min(
+          96,
+          Math.round(
+            ((Math.max(state.activeStep, 0) + 1) / missionSteps.length) * 100,
+          ),
+        );
+      };
+
+      const getActiveLabel = () => {
+        if (state.missionStatus === 'idle') {
+          return 'Select a mission';
+        }
+
+        if (state.missionStatus === 'complete') {
+          return 'Proof trail ready';
+        }
+
+        return (
+          missionSteps[Math.max(state.activeStep, 0)]?.[0] ?? 'Running mission'
+        );
+      };
+
+      const createFallbackResearch = (deal) => ({
+        mode: 'local',
+        sourceUrl: deal.website,
+        summary: `${deal.accountName} is a live configuration check. DealPilot should verify ${String(
+          deal.objection,
+        ).toLowerCase()}, use the listed phone channel, and ask for approval before external execution.`,
+        signals: [
+          { label: 'Mission risk', value: `${deal.risk}%` },
+          { label: 'Constraint', value: deal.objection },
+          { label: 'Spend cap', value: deal.value },
+          {
+            label: 'AgentPhone ask',
+            value: 'Collect target, deadline, constraints, and spend cap',
+          },
+        ],
+      });
+
+      const createMissionFromText = (missionText) => {
+        const normalized = missionText.replace(/\s+/g, ' ').trim();
+        const spendCap = normalized.match(/\$\s?\d[\d,]*/)?.[0];
+        const website = normalized.match(/https?:\/\/\S+/)?.[0];
+
+        return {
+          id: `mission-${Date.now()}`,
+          accountName:
+            normalized.length > 64
+              ? `${normalized.slice(0, 61).trim()}...`
+              : normalized,
+          closePlan: normalized,
+          contactName: 'Created in DealPilot',
+          contactRole: 'User mission',
+          lastTouch: 'Just added',
+          objection:
+            'Needs target, deadline, constraints, and spend cap confirmation',
+          owner: 'DealPilot',
+          risk: spendCap ? 28 : 42,
+          stage: 'Draft mission',
+          value: spendCap ? `${spendCap} cap` : 'Spend cap needed',
+          website: website ?? 'https://agentphone.ai',
+        };
+      };
+
+      const resetMission = () => {
+        state.activeStep = -1;
+        state.agentPhoneResult = undefined;
+        state.browserUseResult = undefined;
+        state.emailResult = undefined;
+        state.memoryResult = undefined;
+        state.missionStatus = 'idle';
+        state.paymentResult = undefined;
+        state.researchBrief = undefined;
+        state.researchError = undefined;
+        render();
+      };
+
+      const addMission = async () => {
+        const missionText = state.missionDraft.trim();
+
+        if (missionText.length < 12) {
+          state.missionInputError = 'Add a little more detail before saving.';
+          render();
+          return;
+        }
+
+        const nextMission = createMissionFromText(missionText);
+
+        try {
+          const savedMission = await requestJson('/missions', {
+            body: JSON.stringify(nextMission),
+            method: 'POST',
+          });
+
+          state.savedMissions.unshift(savedMission);
+          state.selectedId = savedMission.id;
+          state.missionDraft = '';
+          state.missionInputError = undefined;
+          resetMission();
+        } catch {
+          state.missionInputError = 'Mission storage is unavailable.';
+          render();
+        }
+      };
+
+      const toggleVoiceInput = () => {
+        if (state.voiceListening) {
+          state.speechRecognition?.stop();
+          state.speechRecognition = undefined;
+          state.voiceListening = false;
+          render();
+          return;
+        }
+
+        const Recognition =
+          window.SpeechRecognition ?? window.webkitSpeechRecognition;
+
+        if (!Recognition) {
+          state.missionInputError =
+            'Voice input is not available in this browser.';
+          render();
+          return;
+        }
+
+        const recognition = new Recognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        recognition.onresult = (event) => {
+          let transcript = '';
+
+          for (let index = 0; index < event.results.length; index += 1) {
+            transcript += event.results[index]?.[0]?.transcript ?? '';
+          }
+
+          state.missionDraft = `${state.missionDraft} ${transcript}`.trim();
+          state.missionInputError = undefined;
+          render();
+        };
+        recognition.onerror = () => {
+          state.missionInputError =
+            'Voice input stopped before it captured text.';
+          state.voiceListening = false;
+          render();
+        };
+        recognition.onend = () => {
+          state.voiceListening = false;
+          state.speechRecognition = undefined;
+          render();
+        };
+
+        state.speechRecognition = recognition;
+        state.voiceListening = true;
+        state.missionInputError = undefined;
+        recognition.start();
+        render();
+      };
+
+      const runMission = async () => {
+        if (
+          state.missionStatus === 'researching' ||
+          state.missionStatus === 'running'
+        ) {
+          return;
+        }
+
+        const deal = getSelectedDeal();
+
+        state.activeStep = 0;
+        state.agentPhoneResult = undefined;
+        state.browserUseResult = undefined;
+        state.emailResult = undefined;
+        state.memoryResult = undefined;
+        state.missionStatus = 'researching';
+        state.paymentResult = undefined;
+        state.researchBrief = undefined;
+        state.researchError = undefined;
+        render();
+
+        let brief = createFallbackResearch(deal);
+
+        try {
+          brief = await requestJson('/research', {
+            body: JSON.stringify(deal),
+            method: 'POST',
+          });
+        } catch {
+          state.researchError =
+            'Research service is unavailable; using local brief.';
+        }
+
+        try {
+          state.agentPhoneResult = await requestJson('/agentphone/call', {
+            body: JSON.stringify(deal),
+            method: 'POST',
+          });
+        } catch {
+          state.agentPhoneResult = {
+            detail:
+              'AgentPhone route check is unavailable; no call or message was sent.',
+          };
+        }
+
+        try {
+          const [memory, browserUse, payment, email] = await Promise.all([
+            requestJson('/memory/sync', {
+              body: JSON.stringify(deal),
+              method: 'POST',
+            }),
+            requestJson('/browser-use/run', {
+              body: JSON.stringify(deal),
+              method: 'POST',
+            }),
+            requestJson('/payment/authorize', {
+              body: JSON.stringify(deal),
+              method: 'POST',
+            }),
+            requestJson('/email/follow-up', {
+              body: JSON.stringify(deal),
+              method: 'POST',
+            }),
+          ]);
+
+          state.browserUseResult = browserUse;
+          state.emailResult = email;
+          state.memoryResult = memory;
+          state.paymentResult = payment;
+        } catch {
+          state.memoryResult = {
+            detail:
+              'Integration checks are unavailable; approval gates remain pending.',
+          };
+        }
+
+        state.researchBrief = brief;
+        state.missionStatus = 'running';
+
+        for (let index = 0; index < missionSteps.length; index += 1) {
+          state.activeStep = index;
+          render();
+          await delay(index === 0 ? 550 : 720);
+        }
+
+        state.activeStep = missionSteps.length - 1;
+        state.missionStatus = 'complete';
+        render();
+      };
+
+      const renderDeals = () =>
+        getDeals()
+          .map((deal) => {
+            const selected = deal.id === getSelectedDeal().id;
+            return `
+              <button class="deal ${selected ? 'selected' : ''}" data-mission-id="${escapeHtml(
+                deal.id,
+              )}" type="button">
+                <span>
+                  <strong>${escapeHtml(deal.accountName)}</strong>
+                  <span class="meta">${escapeHtml(deal.stage)} / ${escapeHtml(
+                    deal.value,
+                  )} / ${escapeHtml(deal.lastTouch)}</span>
+                </span>
+                <span class="risk ${deal.risk > 65 ? 'high' : ''}">${escapeHtml(
+                  deal.risk,
+                )}%</span>
+              </button>
+            `;
+          })
+          .join('');
+
+      const renderTimeline = () =>
+        missionSteps
+          .map(([title, detail, outcome], index) => {
+            const complete =
+              state.missionStatus === 'complete' || index < state.activeStep;
+            const active =
+              state.missionStatus === 'running' && index === state.activeStep;
+            const stepState = complete ? 'complete' : active ? 'active' : '';
+            return `
+              <div class="step ${stepState}">
+                <span class="step-icon">${complete ? '✓' : index + 1}</span>
+                <span>
+                  <strong>${escapeHtml(title)}</strong>
+                  <span class="meta">${escapeHtml(detail)}</span>
+                  ${
+                    complete || active
+                      ? `<span class="meta">${escapeHtml(outcome)}</span>`
+                      : ''
+                  }
+                </span>
+              </div>
+            `;
+          })
+          .join('');
+
+      const renderSignals = (deal) => {
+        const signals =
+          state.researchBrief?.signals ?? createFallbackResearch(deal).signals;
+        return signals
+          .map(
+            (signal) => `
+              <div class="signal">
+                <span class="meta">${escapeHtml(signal.label)}</span>
+                <span>${escapeHtml(signal.value)}</span>
+              </div>
+            `,
+          )
+          .join('');
+      };
+
+      const getProofItems = () => {
+        const status = state.liveStatus;
+        return [
+          state.liveStatusError,
+          state.agentPhoneResult?.detail ??
+            (status
+              ? `AgentPhone returned ${status.agentPhone.totalNumbers} active numbers, ${status.agentPhone.totalAgents} agents, and ${status.agentPhone.totalConversations ?? 0} conversations.`
+              : 'Waiting for live AgentPhone status.'),
+          state.memoryResult?.detail ??
+            'Context provider readiness will be checked against loaded credentials.',
+          state.browserUseResult?.detail ??
+            'Browser readiness will be checked against loaded credentials.',
+          state.paymentResult?.detail ??
+            'Payment approval route will be checked against loaded credentials.',
+          state.emailResult?.detail ??
+            'Inbox readiness will be checked against loaded credentials.',
+          status?.webhook?.totalEvents
+            ? `Webhook processed ${status.webhook.totalEvents} recent events.`
+            : 'AgentPhone webhook is active for inbound SMS missions.',
+          status?.checkedAt
+            ? `Live status checked at ${new Date(status.checkedAt).toLocaleTimeString()}.`
+            : undefined,
+        ].filter(Boolean);
+      };
+
+      const renderProof = () =>
+        getProofItems()
+          .map(
+            (item) => `
+              <div class="proof-item">
+                <span class="check">✓</span>
+                <span class="meta">${escapeHtml(item)}</span>
+              </div>
+            `,
+          )
+          .join('');
+
+      const render = () => {
+        const deal = getSelectedDeal();
+        const busy =
+          state.missionStatus === 'researching' ||
+          state.missionStatus === 'running';
+        const progress = getProgress();
+        const deals = getDeals();
+        const modeLabel =
+          state.researchBrief?.mode === 'gemini'
+            ? 'Gemini brief'
+            : state.researchBrief
+              ? 'Mission brief'
+              : 'Awaiting mission';
+
+        document.getElementById('app').innerHTML = `
+          <main class="app-shell">
+            <header class="topbar">
+              <div class="brand">
+                <h1>DealPilot</h1>
+                <span>Phone-led deal desk for bookings, deposits, and follow-ups</span>
+              </div>
+              <button class="primary" data-action="run" ${busy ? 'disabled' : ''}>
+                ${state.missionStatus === 'complete' ? 'Run another mission' : 'Call My Agent'}
+              </button>
+            </header>
+            <section class="page">
+              <div class="content">
+                <section class="strip">
+                  <div class="cell">
+                    <div class="row">
+                      <span class="label">Current mission</span>
+                      <span class="pill ${state.missionStatus}">${escapeHtml(
+                        getStatusLabel(),
+                      )}</span>
+                    </div>
+                    <span class="value">${escapeHtml(deal.accountName)}</span>
+                    <span class="meta">${escapeHtml(deal.closePlan)}. Contact: ${escapeHtml(
+                      deal.contactName,
+                    )}.</span>
+                  </div>
+                  <div class="cell">
+                    <span class="label">Approval policy</span>
+                    <span class="value">${escapeHtml(deal.value)}</span>
+                    <span class="meta">${escapeHtml(
+                      deal.objection,
+                    )}. The agent confirms merchant, amount, cancellation window, and receipt before money moves.</span>
+                  </div>
+                  <div class="cell">
+                    <div class="row">
+                      <span class="label">Execution</span>
+                      <span class="meta">${progress}%</span>
+                    </div>
+                    <div class="progress"><span style="width: ${progress}%"></span></div>
+                    <span class="meta">${escapeHtml(getActiveLabel())}</span>
+                  </div>
+                </section>
+
+                <form class="composer" data-action="mission-form">
+                  <div class="composer-copy">
+                    <h2>Add a mission</h2>
+                    <span class="meta">Create a mission in plain language. DealPilot turns it into a phone-ready brief, route check, and proof trail.</span>
+                    <textarea id="mission-draft" aria-label="Mission details" placeholder="Example: Text DealPilot to call Mission Dental, ask for the earliest cleaning next week, and keep the deposit under $50.">${escapeHtml(
+                      state.missionDraft,
+                    )}</textarea>
+                    ${
+                      state.missionInputError
+                        ? `<span class="meta error-text">${escapeHtml(
+                            state.missionInputError,
+                          )}</span>`
+                        : ''
+                    }
+                  </div>
+                  <div class="composer-actions">
+                    <button class="primary" type="submit" ${
+                      state.missionDraft.trim().length < 12 ? 'disabled' : ''
+                    }>Add mission</button>
+                    <button class="secondary" data-action="voice" type="button">${
+                      state.voiceListening ? 'Stop voice' : 'Voice input'
+                    }</button>
+                    <div class="format-note">Suggested format: target, action, time window, spend limit, fallback.</div>
+                  </div>
+                </form>
+
+                <section class="grid-top">
+                  <div class="panel">
+                    <div class="panel-head">
+                      <h2>Mission queue</h2>
+                      <span class="meta">${deals.length} missions</span>
+                    </div>
+                    <div class="deal-list">${renderDeals()}</div>
+                  </div>
+                  <div class="panel">
+                    <div class="panel-head">
+                      <h2>Mission objective</h2>
+                      <span class="meta">${escapeHtml(getStatusLabel())}</span>
+                    </div>
+                    <div class="objective">
+                      <div>
+                        <h3>${escapeHtml(deal.accountName)}</h3>
+                        <span class="meta">${escapeHtml(deal.contactName)}, ${escapeHtml(
+                          deal.contactRole,
+                        )}</span>
+                        <div class="stat-grid">
+                          <div class="stat"><span>Spend cap</span><strong>${escapeHtml(
+                            deal.value,
+                          )}</strong></div>
+                          <div class="stat"><span>Owner</span><strong>${escapeHtml(
+                            deal.owner,
+                          )}</strong></div>
+                          <div class="stat"><span>Objective</span><strong>${escapeHtml(
+                            deal.closePlan,
+                          )}</strong></div>
+                          <div class="stat"><span>Constraint</span><strong>${escapeHtml(
+                            deal.objection,
+                          )}</strong></div>
+                        </div>
+                      </div>
+                      <div class="actions">
+                        <button class="primary" data-action="run" ${
+                          busy ? 'disabled' : ''
+                        }>Call My Agent</button>
+                        <button class="secondary" data-action="reset" ${
+                          state.missionStatus === 'idle' || busy
+                            ? 'disabled'
+                            : ''
+                        }>Reset</button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="grid-main">
+                  <div class="panel">
+                    <div class="panel-head">
+                      <h2>Mission timeline</h2>
+                      <span class="meta">${
+                        state.activeStep + 1 > 0
+                          ? `${Math.min(state.activeStep + 1, missionSteps.length)} of ${
+                              missionSteps.length
+                            } / ${escapeHtml(getActiveLabel())}`
+                          : 'Not started'
+                      }</span>
+                    </div>
+                    <div class="timeline">${renderTimeline()}</div>
+                  </div>
+                  <div class="panel">
+                    <div class="panel-head">
+                      <h2>Artifacts</h2>
+                      <span class="meta">${escapeHtml(modeLabel)}</span>
+                    </div>
+                    <div class="artifact-grid">
+                      <div class="artifact">
+                        <strong>Research brief</strong>
+                        <p>${escapeHtml(
+                          state.researchBrief?.summary ??
+                            'Run the live check to build an operating brief from the selected AgentPhone route.',
+                        )}</p>
+                        ${
+                          state.researchError
+                            ? `<p class="error-text">${escapeHtml(state.researchError)}</p>`
+                            : ''
+                        }
+                      </div>
+                      <div class="artifact">
+                        <strong>Decision checks</strong>
+                        <div class="signals">${renderSignals(deal)}</div>
+                      </div>
+                      <div class="artifact">
+                        <strong>Proof trail</strong>
+                        <div class="proof">${renderProof()}</div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <footer class="footer">
+                  <span>Built with <strong>AgentPhone, Gemini, Browser Use, Moss, Supermemory, AgentMail, Sponge</strong></span>
+                  <span>Live route checks, mission briefs, voice/text intake, approval gates.</span>
+                </footer>
+              </div>
+            </section>
+          </main>
+        `;
+      };
+
+      document.addEventListener('submit', (event) => {
+        if (event.target.matches('[data-action="mission-form"]')) {
+          event.preventDefault();
+          addMission();
+        }
+      });
+
+      document.addEventListener('input', (event) => {
+        if (event.target.id === 'mission-draft') {
+          state.missionDraft = event.target.value;
+          state.missionInputError = undefined;
+          render();
+        }
+      });
+
+      document.addEventListener('click', (event) => {
+        const action = event.target.closest('[data-action]')?.dataset.action;
+        const missionId =
+          event.target.closest('[data-mission-id]')?.dataset.missionId;
+
+        if (missionId) {
+          state.selectedId = missionId;
+          resetMission();
+          return;
+        }
+
+        if (action === 'run') {
+          if (state.missionStatus === 'complete') {
+            resetMission();
+            return;
+          }
+          runMission();
+        }
+
+        if (action === 'reset') {
+          resetMission();
+        }
+
+        if (action === 'voice') {
+          toggleVoiceInput();
+        }
+      });
+
+      const boot = async () => {
+        render();
+
+        try {
+          state.liveStatus = await requestJson('/live-status', {
+            method: 'GET',
+          });
+          state.liveStatusError = undefined;
+        } catch {
+          state.liveStatusError = 'Live AgentPhone status is unavailable.';
+        }
+
+        try {
+          const payload = await requestJson('/missions', { method: 'GET' });
+          state.savedMissions = payload.data ?? [];
+        } catch {
+          state.missionInputError = 'Saved missions could not be loaded.';
+        }
+
+        render();
+      };
+
+      boot();
+    </script>
+  </body>
+</html>
