@@ -695,7 +695,16 @@
           ];
         }
 
-        return state.liveStatus.agentPhone.numbers.map((number) => {
+        const preferredNumbers = [
+          ...state.liveStatus.agentPhone.numbers,
+        ].sort((left, right) => {
+          const score = (number) =>
+            `${number.type}`.toLowerCase() === 'sms' ? 0 : 1;
+
+          return score(left) - score(right);
+        });
+
+        return preferredNumbers.map((number) => {
           const attachedAgent = state.liveStatus.agentPhone.agents.find(
             (agent) => agent.id === number.agentId,
           );
